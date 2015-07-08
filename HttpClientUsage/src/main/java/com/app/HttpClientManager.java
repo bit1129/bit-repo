@@ -55,6 +55,8 @@ public class HttpClientManager {
 
     private CloseableHttpClient createHttpClientSingleton() {
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
+
+        ///If following code(set pool connection manager) is commented out, the response time will make sense
         httpClientBuilder.setConnectionManager(cm);
 
         RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
