@@ -17,7 +17,7 @@ public class HttpClientUtilTest {
 
     private int loopInterval = 50;
 
-    private String TEST_URL = "http://pss.qiyi.domain/services/subscribe/list.htm?authcookie=f8crKciDhLBlYm2ZXIhiAdY6g4vJeHPO1Zm3TxKOGJyXj54m4b1&subscribeType=1&page=1&rows=5&sort=latestUpdate&fields=userinfo,verify_info,space,qiyi_vip_info,private_info";
+    private String TEST_URL = "http://abc.json";
     @Test
     public void testHttpClient() throws Exception {
         int i = 0;
