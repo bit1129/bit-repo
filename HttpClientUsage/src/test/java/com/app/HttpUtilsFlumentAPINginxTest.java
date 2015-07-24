@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpClientPoolUtilsTest {
+public class HttpUtilsFlumentAPINginxTest {
 
     private final Logger LOG = LoggerFactory.getLogger("hc4");
 
@@ -17,6 +17,8 @@ public class HttpClientPoolUtilsTest {
     private String[] upstreams = new String[]{"10.153.77.101:8080", "10.153.77.102:8080", "10.153.77.103:8080", "10.153.108.116:8080", "10.153.108.117:8080"};
 
     private String TEST_URL = "http://10.10.191.134/services/subscribe/list.htm?authcookie=f8crKciDhLBlYm2ZXIhiAdY6g4vJeHPO1Zm3TxKOGJyXj54m4b1&subscribeType=1&page=1&rows=5&sort=latestUpdate&fields=userinfo,verify_info,space,qiyi_vip_info,private_info";
+
+    //private String TEST_URL = "http://10.15.190.251/services/subscribe/list.htm?authcookie=f8crKciDhLBlYm2ZXIhiAdY6g4vJeHPO1Zm3TxKOGJyXj54m4b1&subscribeType=1&page=1&rows=5&sort=latestUpdate&fields=userinfo,verify_info,space,qiyi_vip_info,private_info";
 
 //    private String TEST_URL = "http://%s/services/subscribe/list.htm?authcookie=f8crKciDhLBlYm2ZXIhiAdY6g4vJeHPO1Zm3TxKOGJyXj54m4b1&subscribeType=1&page=1&rows=5&sort=latestUpdate&fields=userinfo,verify_info,space,qiyi_vip_info,private_info";
 
@@ -39,7 +41,7 @@ public class HttpClientPoolUtilsTest {
                         long start = System.currentTimeMillis();
                         int k = i % 4;
 //                        TEST_URL = String.format(TEST_URL, upstreams[i % 4]);
-                        HttpUtils.httpInvoke(TEST_URL, null, null);
+                        HttpClientFlumentAPI.getHttpClientConnectionManagerInstance().execute(TEST_URL);
                         long a = System.currentTimeMillis() - start;
                         LOG.info("timeSpent: {}, ID: {}", (a >= 1000 ? a + "(>1000)" : a), k);
                         try {

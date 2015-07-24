@@ -18,34 +18,15 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
+import org.apache.http.client.fluent.Request;
+
+import java.io.IOException;
 import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
-final class IdleConnectionMonitor implements Runnable {
-
-     private int readTimeout = 3000;
-     PoolingHttpClientConnectionManager connectionManager;
-
-    public IdleConnectionMonitor(PoolingHttpClientConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
-    }
-
-    @Override
-    public void run() {
-        // Close expired connections
-        connectionManager.closeExpiredConnections();
-        // Optionally, close connections
-        // that have been idle longer than readTimeout*2 MILLISECONDS
-        connectionManager.closeIdleConnections(readTimeout * 2, TimeUnit.MILLISECONDS);
-    }
-}
-
-public class HttpClientManager {
+public class HttpClientFlumentAPI {
     private static int defaultConnectionTimeout = 10 * 1000;
     private static int defaultSocketTimeout = 10 * 1000;
     private static int connectionRequestTimeout = 10 * 1000;
@@ -63,29 +44,23 @@ public class HttpClientManager {
 
     private PoolingHttpClientConnectionManager cm;
 
-    private final static HttpClientManager httpClientConnectionManager = new HttpClientManager();
+    private final static HttpClientFlumentAPI httpClientConnectionManager = new HttpClientFlumentAPI();
 
     private CloseableHttpClient HTTP_CLIENT = null;
 
 
-    private HttpClientManager() {
+    private HttpClientFlumentAPI() {
         cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(defaultMaxTotalConnections);
         cm.setDefaultMaxPerRoute(defaultMaxRouteConnections);
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler
-                .scheduleAtFixedRate(new IdleConnectionMonitor(cm), 1*1000, 3*1000, TimeUnit.MILLISECONDS);
-
         HTTP_CLIENT = createHttpClientSingleton();
     }
-
-
 
     private CloseableHttpClient createHttpClientSingleton() {
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
 
         ///If following code(set pool connection manager) is commented out, the response time will make sense
-        httpClientBuilder.setConnectionManager(cm);
+//        httpClientBuilder.setConnectionManager(cm);
 
         RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
                 .setConnectTimeout(defaultConnectionTimeout)
@@ -117,38 +92,20 @@ public class HttpClientManager {
         return httpClientBuilder.build();
     }
 
-    public String execute(HttpGet httpGet) {
+    public String execute(String url) {
         String body = "";
-//        CloseableHttpClient httpClient = createHttpClientSingleton();
         try {
-            CloseableHttpResponse response = HTTP_CLIENT.execute(httpGet);
-            int status = response.getStatusLine().getStatusCode();
-            try {
-                if (status == HttpStatus.SC_OK) {
-                    HttpEntity entity = response.getEntity();
-                    if (entity != null) {
-                        Header header = (Header) entity.getContentEncoding();
-                        if (header != null && "gzip".equals(header.getValue())) {
-                            body = EntityUtils.toString(new GzipDecompressingEntity(entity), Charset);
-                        } else {
-                            body = EntityUtils.toString(entity, Charset);
-                        }
-                    }
-                } else {
-                    System.out.println("[httpClientManager] [fail] [httpGet:{}] [status:{}]" + httpGet + status);
-                }
-            } finally {
-                response.close();
-
-//                httpClient.close();
-            }
-        } catch (Exception e) {
+            Request.Get(url)
+                    .connectTimeout(10*1000)
+                    .socketTimeout(10*1000)
+                    .execute().returnContent().asString();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return body;
     }
 
-    public static HttpClientManager getHttpClientConnectionManagerInstance() {
+    public static HttpClientFlumentAPI getHttpClientConnectionManagerInstance() {
         return httpClientConnectionManager;
     }
 
